@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Minimal Ring Concept</title>
+
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: black;
+  background-image:
+    radial-gradient(at 75% 48%, #003c43 0%, transparent 70%),
+    radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
+    radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
+    radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
+    font-family: 'Lato', sans-serif;
+}
+
+/* UI ELEMENTS */
+#closeBtn {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 12px 24px;
+  cursor: pointer;
+  display: none;
+  z-index: 10;
+  letter-spacing: 2px;
+  transition: all 0.4s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+}
+#closeBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #fff;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+/* BACKGROUND LAYERS */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  transition: opacity 1.2s ease;
+  opacity: 0;
+  z-index: -1;
+}
+.bg-layer.active {
+  opacity: 1;
+}
+
+/* 1. NEUTRAL (User Provided) */
+#bg-neutral {
+  background: transparent; /* Body background shows through */
+}
+
+/* 2. RED (Passion) */
+#bg-red {
+  background: radial-gradient(circle at center, #fff5f5 0%, #eecccc 40%, #5e2a2a 90%);
+}
+
+/* 3. GREEN (Balance) */
+#bg-green {
+  background: radial-gradient(circle at center, #f0fff4 0%, #ccebd6 40%, #2a4d38 90%);
+}
+
+/* 4. BLUE (Depth) */
+#bg-blue {
+  background: radial-gradient(circle at center, #f0f8ff 0%, #ccddee 40%, #2a3b55 90%);
+}
+
+/* TEXT OVERLAYS */
+.text-overlay {
+  position: fixed;
+  width: 100%;
+  text-align: center;
+  color: white;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease, transform 1s ease;
+  z-index: 5;
+}
+.text-overlay.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#introText {
+  top: 45%;
+  font-size: 24px;
+  letter-spacing: 3px;
+  font-weight: 300;
+}
+
+#headerMsg {
+  top: 10%;
+  font-size: 20px;
+  letter-spacing: 4px;
+  font-family: 'Cinzel', serif;
+  text-transform: uppercase;
+}
+
+#diamondContent {
+  top: 20%;
+  left: 10%;
+  width: 30%;
+  text-align: left;
+}
+#diamondContent h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-family: 'Cinzel', serif;
+}
+#diamondContent p {
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BACKGROUNDS -->
+<div id="bg-neutral" class="bg-layer active"></div>
+<div id="bg-red" class="bg-layer"></div>
+<div id="bg-green" class="bg-layer"></div>
+<div id="bg-blue" class="bg-layer"></div>
+
+<!-- UI -->
+<button id="closeBtn">CLOSE</button>
+
+<div id="introText" class="text-overlay">
+  Not every diamond is the same.<br>Neither are you.
+</div>
+
+<div id="headerMsg" class="text-overlay">Choose what defines you.</div>
+
+<div id="diamondContent" class="text-overlay">
+  <h1 id="d-title">Title</h1>
+  <p id="d-sub">Subtext</p>
+  <p id="d-foot" style="margin-top: 30px; font-style: italic; font-size: 14px;">Footer</p>
+</div>
+
+<div id="outroText" class="text-overlay" style="bottom: 20%; font-size: 18px; letter-spacing: 2px;">
+  Every colour tells a story. Which one is yours?
+</div>
+
+<a-scene
+  vr-mode-ui="enabled:false"
+  renderer="physicallyCorrectLights:true; alpha:true">
+
+  <!-- CAMERA -->
+  <a-entity
+    camera
+    position="0 1.15 3"
+    fov="40"
+    cursor="rayOrigin: mouse"
+    raycaster="objects: .ring">
+  </a-entity>
+
+  <!-- LIGHTS -->
+  <a-light type="ambient" intensity="0.8"></a-light>
+  <a-light type="directional" position="2 4 3" intensity="0.6"></a-light>
+
+  <!-- GROUP -->
+  <a-entity id="ringGroup" position="0 0.85 -1.6">
+
+    <!-- RING 1 (RED) -->
+    <a-entity class="ring" data-type="red"
+      gltf-model="resources/models/ring1.glb"
+      position="-2.2 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
+
+    <!-- RING 2 (GREEN) -->
+    <a-entity class="ring" data-type="green"
+      gltf-model="resources/models/ring2.glb"
+      position="0 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#00ff00" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
+
+    <!-- RING 3 (BLUE) -->
+    <a-entity class="ring" data-type="blue"
+      gltf-model="resources/models/ring3.glb"
+      position="2.2 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#0000ff" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
+
+  </a-entity>
+
+</a-scene>
+
+<script>
+const rings = document.querySelectorAll(".ring");
+const group = document.getElementById("ringGroup");
+const closeBtn = document.getElementById("closeBtn");
+
+const introText = document.getElementById("introText");
+const headerMsg = document.getElementById("headerMsg");
+const diamondContent = document.getElementById("diamondContent");
+const outroText = document.getElementById("outroText");
+
+const dTitle = document.getElementById("d-title");
+const dSub = document.getElementById("d-sub");
+const dFoot = document.getElementById("d-foot");
+
+let activeRing = null;
+let dragging = false;
+let lastX = 0;
+
+const content = {
+  red: {
+  title: "Depth in Design",
+  sub: "For those who value precision,<br>clarity, and quiet strength.",
+  foot: "Defined by depth."
+},
+green: {
+  title: "Balanced by Nature",
+  sub: "A statement of harmony,<br>crafted for refined confidence.",
+  foot: "Luxury in balance."
+},
+blue: {
+  title: "Timeless Focus",
+  sub: "Created for minds that think deeper<br>and choose elegance that lasts.",
+  foot: "Enduring sophistication."
+}
+};
+
+/* ===== INTRO SEQUENCE ===== */
+window.addEventListener('load', () => {
+  // 1. Show first line
+  introText.classList.add('show');
+  
+  // 2. Hide first line
+  setTimeout(() => {
+    introText.classList.remove('show');
+  }, 3000);
+
+  // 3. Show Header & Reveal rings
+  setTimeout(() => {
+    headerMsg.classList.add('show');
+    
+    // Animate rings appearing sequentially
+    rings.forEach((ring, i) => {
+      setTimeout(() => {
+        ring.setAttribute('animation__appear', 'property: scale; to: 1 1 1; dur: 1000; easing: easeOutBack');
+        const light = ring.querySelector('a-light');
+        light.setAttribute('animation__glow', 'property: intensity; to: 0.5; dur: 800');
+      }, i * 600);
+    });
+  }, 4000);
+});
+
+/* ===== MATERIAL POLISH ===== */
+rings.forEach(ring => {
+  ring.addEventListener("model-loaded", () => {
+    ring.object3D.traverse(n => {
+      if (n.isMesh) {
+        n.material.metalness = 0.95;
+        n.material.roughness = 0.18;
+        n.material.color.multiplyScalar(1.05);
+      }
+    });
+  });
+});
+
+/* ===== CLICK ===== */
+rings.forEach(ring => {
+  ring.addEventListener("click", () => {
+    if (activeRing) return;
+
+    const type = ring.getAttribute("data-type");
+    const data = content[type];
+
+    // Update Background
+    document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
+    document.getElementById(`bg-${type}`).classList.add('active');
+
+    // Hide other rings
+    rings.forEach(r => {
+      if (r !== ring) {
+        r.setAttribute('visible', false);
+      }
+    });
+
+    activeRing = ring;
+    closeBtn.style.display = "block";
+    outroText.classList.remove('show');
+
+    // Remove reset animations to prevent conflicts
+    ring.removeAttribute("animation__resetPos");
+    ring.removeAttribute("animation__resetScale");
+
+    // Move slightly right (0.6) to avoid text overlap
+    ring.setAttribute("animation__focus", "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
+    ring.setAttribute("animation__size", "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
+
+    // Show Content
+    dTitle.innerHTML = data.title;
+    dSub.innerHTML = data.sub;
+    dFoot.innerHTML = data.foot;
+    diamondContent.classList.add('show');
+
+  });
+});
+
+/* ===== DRAG ROTATE ===== */
+document.addEventListener("mousedown", e => {
+  if (!activeRing) return;
+  dragging = true;
+  lastX = e.clientX;
+});
+
+document.addEventListener("mousemove", e => {
+  if (!dragging || !activeRing) return;
+
+  const dx = e.clientX - lastX;
+  lastX = e.clientX;
+
+  const r = activeRing.getAttribute("rotation");
+  activeRing.setAttribute("rotation", {
+    x: r.x,
+    y: r.y + dx * 0.5,
+    z: r.z
+  });
+});
+
+document.addEventListener("mouseup", () => dragging = false);
+
+/* ===== CLOSE ===== */
+closeBtn.addEventListener("click", () => {
+  // 1. Fade out text
+  diamondContent.classList.remove('show');
+  closeBtn.style.display = "none";
+
+  // 2. Animate rings back
+  rings.forEach((r, i) => {
+    r.setAttribute('visible', true);
+    
+    // Calculate original position (New spacing 2.2)
+    const x = (i - 1) * 2.2;
+
+    // Animate Position Back
+    r.setAttribute("animation__resetPos", `property: position; to: ${x} 0 0; dur: 1200; easing: easeInOutQuad`);
+    r.setAttribute("animation__resetScale", "property: scale; to: 1 1 1; dur: 1200; easing: easeInOutQuad");
+
+    // Clean up focus animations
+    r.removeAttribute("animation__focus");
+    r.removeAttribute("animation__size");
+  });
+
+  activeRing = null;
+  
+  // Reset Background
+  document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
+  document.getElementById('bg-neutral').classList.add('active');
+
+  // Show Outro
+  setTimeout(() => outroText.classList.add('show'), 1200);
+});
+
+
+
+</script>
+
+</body>
+</html>
