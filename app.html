@@ -19,8 +19,55 @@ html, body {
     radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
     radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
     radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
-    font-family: 'Lato', sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+/* Scene 1: Intro Animation */
+    #intro {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /* Match body gradient */
+      background-color: #070f2b;
+     background-image:
+    radial-gradient(at 75% 48%, #003c43 0%, transparent 70%),
+    radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
+    radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
+    radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      animation: fadeOut 1.5s ease-in-out 3.5s forwards;
+      pointer-events: none;
+    }
+    
+    #intro h1 {
+      font-size: 3rem;
+      letter-spacing: 0.2em;
+      margin: 0;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 0.5s forwards;
+    }
+
+    .line {
+      width: 0;
+      height: 1px;
+      background: white;
+      margin: 20px 0;
+      animation: expandLine 1s ease-out 1.5s forwards;
+    }
+
+    #intro p {
+      font-size: 1.2rem;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeIn 1s ease-out 2.5s forwards;
+    }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes expandLine { to { width: 200px; } }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
 /* UI ELEMENTS */
 #closeBtn {
@@ -187,6 +234,7 @@ html, body {
       scale="0 0 0">
       <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
     </a-entity>
+    
 
     <!-- RING 2 (GREEN) -->
     <a-entity class="ring" data-type="green"
@@ -378,8 +426,6 @@ closeBtn.addEventListener("click", () => {
   // Show Outro
   setTimeout(() => outroText.classList.add('show'), 1200);
 });
-
-
 
 </script>
 
