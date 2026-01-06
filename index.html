@@ -19,7 +19,7 @@ html, body {
     radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
     radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
     radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
-    font-family: 'Lato', sans-serif;
+  font-family: 'Lato', sans-serif;
 }
 
 /* UI ELEMENTS */
@@ -61,22 +61,18 @@ html, body {
   opacity: 1;
 }
 
-/* 1. NEUTRAL (User Provided) */
+/* NEUTRAL */
 #bg-neutral {
-  background: transparent; /* Body background shows through */
+  background: transparent;
 }
 
-/* 2. RED (Passion) */
+/* RED / GREEN / BLUE */
 #bg-red {
   background: radial-gradient(circle at center, #fff5f5 0%, #eecccc 40%, #5e2a2a 90%);
 }
-
-/* 3. GREEN (Balance) */
 #bg-green {
   background: radial-gradient(circle at center, #f0fff4 0%, #ccebd6 40%, #2a4d38 90%);
 }
-
-/* 4. BLUE (Depth) */
 #bg-blue {
   background: radial-gradient(circle at center, #f0f8ff 0%, #ccddee 40%, #2a3b55 90%);
 }
@@ -163,6 +159,9 @@ html, body {
   vr-mode-ui="enabled:false"
   renderer="physicallyCorrectLights:true; alpha:true">
 
+  <!-- GLOBAL STATE ENTITY (ECS) -->
+  <a-entity id="appState" global-state></a-entity>
+
   <!-- CAMERA -->
   <a-entity
     camera
@@ -176,255 +175,273 @@ html, body {
   <a-light type="ambient" intensity="0.8"></a-light>
   <a-light type="directional" position="2 4 3" intensity="0.6"></a-light>
 
-  <!-- GROUP -->
   <a-entity id="ringGroup" position="0 0.85 -1.6">
 
-    <!-- RING 1 (RED) -->
-    <a-entity class="ring" data-type="red"
-      gltf-model="resources/models/ring1.glb"
-      position="-2.2 0 0"
-      rotation="0 -90 0"
-      scale="0 0 0">
-      <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
-    </a-entity>
-
-    <!-- RING 2 (GREEN) -->
-    <a-entity class="ring" data-type="green"
-      gltf-model="resources/models/ring2.glb"
-      position="0 0 0"
-      rotation="0 -90 0"
-      scale="0 0 0">
-      <a-light type="point" color="#00ff00" intensity="0" distance="1" position="0 0.5 0"></a-light>
-    </a-entity>
-
-    <!-- RING 3 (BLUE) -->
-    <a-entity class="ring" data-type="blue"
-      gltf-model="resources/models/ring3.glb"
-      position="2.2 0 0"
-      rotation="0 -90 0"
-      scale="0 0 0">
-      <a-light type="point" color="#0000ff" intensity="0" distance="1" position="0 0.5 0"></a-light>
-    </a-entity>
-
+  <a-entity class="ring" data-type="red" ring-focus drag-rotate-y
+    gltf-model="resources/models/ring1.glb"
+    position="-2.2 0 0"
+    rotation="0 -90 0"
+    scale="0 0 0">
+    <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
   </a-entity>
+
+  <a-entity class="ring" data-type="green" ring-focus drag-rotate-y
+    gltf-model="resources/models/ring2.glb"
+    position="0 0 0"
+    rotation="0 -90 0"
+    scale="0 0 0">
+    <a-light type="point" color="#00ff00" intensity="0" distance="1" position="0 0.5 0"></a-light>
+  </a-entity>
+
+  <a-entity class="ring" data-type="blue" ring-focus drag-rotate-y
+    gltf-model="resources/models/ring3.glb"
+    position="2.2 0 0"
+    rotation="0 -90 0"
+    scale="0 0 0">
+    <a-light type="point" color="#0000ff" intensity="0" distance="1" position="0 0.5 0"></a-light>
+  </a-entity>
+
+</a-entity>
 
 </a-scene>
 
 <script>
-const rings = document.querySelectorAll(".ring");
-const group = document.getElementById("ringGroup");
-const closeBtn = document.getElementById("closeBtn");
+/* ===== UI + TEXT ELEMENTS ===== */
+const closeBtn      = document.getElementById("closeBtn");
+const introText     = document.getElementById("introText");
+const headerMsg     = document.getElementById("headerMsg");
+const diamondContent= document.getElementById("diamondContent");
+const outroText     = document.getElementById("outroText");
+const dTitle        = document.getElementById("d-title");
+const dSub          = document.getElementById("d-sub");
+const dFoot         = document.getElementById("d-foot");
 
-// Store original transforms for each ring
-const originalTransforms = [];
-rings.forEach(r => {
-  const pos = r.getAttribute("position");
-  const rot = r.getAttribute("rotation");
-  const scale = r.getAttribute("scale");
-  originalTransforms.push({
-    el: r,
-    position: { x: pos.x, y: pos.y, z: pos.z },
-    rotation: { x: rot.x, y: rot.y, z: rot.z },
-    scale: { x: scale.x, y: scale.y, z: scale.z }
-  });
-});
-
-const introText = document.getElementById("introText");
-const headerMsg = document.getElementById("headerMsg");
-const diamondContent = document.getElementById("diamondContent");
-const outroText = document.getElementById("outroText");
-
-const dTitle = document.getElementById("d-title");
-const dSub = document.getElementById("d-sub");
-const dFoot = document.getElementById("d-foot");
-
-let activeRing = null;
-let dragging = false;
-let lastX = 0;
-
+/* RING CONTENT COPY */
 const content = {
   red: {
-  title: "Depth in Design",
-  sub: "For those who value precision,<br>clarity, and quiet strength.",
-  foot: "Defined by depth."
-},
-green: {
-  title: "Balanced by Nature",
-  sub: "A statement of harmony,<br>crafted for refined confidence.",
-  foot: "Luxury in balance."
-},
-blue: {
-  title: "Timeless Focus",
-  sub: "Created for minds that think deeper<br>and choose elegance that lasts.",
-  foot: "Enduring sophistication."
-}
+    title: "Depth in Design",
+    sub:   "For those who value precision,<br>clarity, and quiet strength.",
+    foot:  "Defined by depth."
+  },
+  green: {
+    title: "Balanced by Nature",
+    sub:   "A statement of harmony,<br>crafted for refined confidence.",
+    foot:  "Luxury in balance."
+  },
+  blue: {
+    title: "Timeless Focus",
+    sub:   "Created for minds that think deeper<br>and choose elegance that lasts.",
+    foot:  "Enduring sophistication."
+  }
 };
+
+/* ===== GLOBAL STATE COMPONENT ===== */
+AFRAME.registerComponent('global-state', {
+  init: function () {
+    this.activeRing = null;
+    this.isBusy = false;
+    window.appState = this;
+  }
+});
+
+/* ===== RING FOCUS COMPONENT ===== */
+AFRAME.registerComponent('ring-focus', {
+  init: function () {
+    const el = this.el;
+
+    // PBR tweak on load
+    el.addEventListener("model-loaded", () => {
+      el.object3D.traverse(n => {
+        if (n.isMesh && n.material) {
+          n.material.metalness = 0.95;
+          n.material.roughness = 0.18;
+          if (n.material.color) n.material.color.multiplyScalar(1.05);
+        }
+      });
+    });
+
+    el.addEventListener("click", () => {
+      const state = window.appState;
+      if (!state || state.isBusy) return;
+      if (state.activeRing && state.activeRing !== el) return;
+      if (el.getAttribute("visible") === false) return;
+
+      const type = el.getAttribute("data-type");
+      const data = content[type] || content.red;
+
+      state.isBusy = true;
+      state.activeRing = el;
+
+      // background
+      document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
+      document.getElementById(`bg-${type}`).classList.add('active');
+
+      // hide other rings
+      const rings = document.querySelectorAll(".ring");
+      rings.forEach(r => {
+        if (r !== el) r.setAttribute('visible', false);
+      });
+
+      closeBtn.style.display = "block";
+      outroText.classList.remove('show');
+
+      el.removeAttribute("animation__resetPos");
+      el.removeAttribute("animation__resetScale");
+      el.removeAttribute("animation__resetRot");
+
+      // focus animations
+      el.setAttribute("animation__focus",
+        "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
+      el.setAttribute("animation__size",
+        "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
+
+      dTitle.innerHTML = data.title;
+      dSub.innerHTML   = data.sub;
+      dFoot.innerHTML  = data.foot;
+      diamondContent.classList.add('show');
+
+      setTimeout(() => { state.isBusy = false; }, 750);
+    });
+  }
+});
+
+/* ===== DRAG ROTATE COMPONENT ===== */
+AFRAME.registerComponent('drag-rotate-y', {
+  init: function () {
+    this.dragging = false;
+    this.lastX = 0;
+    this.handleMouseDown = this.onMouseDown.bind(this);
+    this.handleMouseMove = this.onMouseMove.bind(this);
+    this.handleMouseUp   = this.onMouseUp.bind(this);
+    this.handleTouchStart= this.onTouchStart.bind(this);
+    this.handleTouchMove = this.onTouchMove.bind(this);
+    this.handleTouchEnd  = this.onTouchEnd.bind(this);
+
+    document.addEventListener("mousedown", this.handleMouseDown);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup",   this.handleMouseUp);
+
+    document.addEventListener("touchstart", this.handleTouchStart, {passive:false});
+    document.addEventListener("touchmove",  this.handleTouchMove,  {passive:false});
+    document.addEventListener("touchend",   this.handleTouchEnd);
+  },
+  onMouseDown: function (e) {
+    const state = window.appState;
+    if (!state || state.activeRing !== this.el) return;
+    this.dragging = true;
+    this.lastX = e.clientX;
+  },
+  onMouseMove: function (e) {
+    if (!this.dragging) return;
+    const state = window.appState;
+    if (!state || state.activeRing !== this.el) return;
+
+    const dx = e.clientX - this.lastX;
+    this.lastX = e.clientX;
+
+    const r = this.el.getAttribute("rotation");
+    this.el.setAttribute("rotation", {x: r.x, y: r.y + dx * 0.5, z: r.z});
+  },
+  onMouseUp: function () {
+    this.dragging = false;
+  },
+  onTouchStart: function (e) {
+    const state = window.appState;
+    if (!state || state.activeRing !== this.el) return;
+    this.dragging = true;
+    this.lastX = e.touches[0].clientX;
+  },
+  onTouchMove: function (e) {
+    if (!this.dragging) return;
+    const state = window.appState;
+    if (!state || state.activeRing !== this.el) return;
+    e.preventDefault();
+    const dx = e.touches[0].clientX - this.lastX;
+    this.lastX = e.touches[0].clientX;
+    const r = this.el.getAttribute("rotation");
+    this.el.setAttribute("rotation", {x: r.x, y: r.y + dx * 0.5, z: r.z});
+  },
+  onTouchEnd: function () {
+    this.dragging = false;
+  },
+  remove: function () {
+    document.removeEventListener("mousedown", this.handleMouseDown);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup",   this.handleMouseUp);
+    document.removeEventListener("touchstart", this.handleTouchStart);
+    document.removeEventListener("touchmove",  this.handleTouchMove);
+    document.removeEventListener("touchend",   this.handleTouchEnd);
+  }
+});
 
 /* ===== INTRO SEQUENCE ===== */
 window.addEventListener('load', () => {
-  // 1. Show first line
+  const rings = document.querySelectorAll(".ring");
+
   introText.classList.add('show');
-  
-  // 2. Hide first line
+
   setTimeout(() => {
     introText.classList.remove('show');
   }, 3000);
 
-  // 3. Show Header & Reveal rings
   setTimeout(() => {
     headerMsg.classList.add('show');
-    
-    // Animate rings appearing sequentially
+
+    // rings appear sequentially
     rings.forEach((ring, i) => {
       setTimeout(() => {
-        ring.setAttribute('animation__appear', 'property: scale; to: 1 1 1; dur: 1000; easing: easeOutBack');
+        ring.setAttribute('animation__appear',
+          'property: scale; to: 1 1 1; dur: 1000; easing: easeOutBack');
         const light = ring.querySelector('a-light');
-        light.setAttribute('animation__glow', 'property: intensity; to: 0.5; dur: 800');
+        light.setAttribute('animation__glow',
+          'property: intensity; to: 0.5; dur: 800');
       }, i * 600);
     });
   }, 4000);
 });
 
-/* ===== MATERIAL POLISH ===== */
-rings.forEach(ring => {
-  ring.addEventListener("model-loaded", () => {
-    ring.object3D.traverse(n => {
-      if (n.isMesh) {
-        n.material.metalness = 0.95;
-        n.material.roughness = 0.18;
-        n.material.color.multiplyScalar(1.05);
-      }
-    });
-  });
-});
-
-/* ===== CLICK (FOCUS RING) ===== */
-rings.forEach(ring => {
-  ring.addEventListener("click", () => {
-    // if a ring is already focused, ignore
-    if (activeRing) return;
-
-    // ignore clicks on hidden rings
-    if (ring.getAttribute("visible") === false) return;
-
-    const type = ring.getAttribute("data-type");
-    const data = content[type];
-
-    // background
-    document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
-    document.getElementById(`bg-${type}`).classList.add('active');
-
-    // hide other rings
-    rings.forEach(r => {
-      if (r !== ring) r.setAttribute('visible', false);
-    });
-
-    activeRing = ring;
-    closeBtn.style.display = "block";
-    outroText.classList.remove('show');
-
-    // clear previous reset animations on this ring
-    ring.removeAttribute("animation__resetPos");
-    ring.removeAttribute("animation__resetScale");
-    ring.removeAttribute("animation__resetRot");
-
-    // move + scale to focus
-    ring.setAttribute("animation__focus",
-      "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
-    ring.setAttribute("animation__size",
-      "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
-
-    // update text
-    dTitle.innerHTML = data.title;
-    dSub.innerHTML = data.sub;
-    dFoot.innerHTML = data.foot;
-    diamondContent.classList.add('show');
-  });
-});
-
-/* ===== DRAG ROTATE ===== */
-document.addEventListener("mousedown", e => {
-  if (!activeRing) return;
-  dragging = true;
-  lastX = e.clientX;
-});
-
-document.addEventListener("mousemove", e => {
-  if (!dragging || !activeRing) return;
-
-  const dx = e.clientX - lastX;
-  lastX = e.clientX;
-
-  const r = activeRing.getAttribute("rotation");
-  activeRing.setAttribute("rotation", {
-    x: r.x,
-    y: r.y + dx * 0.5,
-    z: r.z
-  });
-});
-
-document.addEventListener("mouseup", () => dragging = false);
-
-// ADD BELOW your existing mouse events
-document.addEventListener("touchstart", e => {
-  if(!activeRing) return; dragging=true; lastX = e.touches[0].clientX;
-}, {passive:false});
-document.addEventListener("touchmove", e => {
-  if(!dragging||!activeRing) return; e.preventDefault();
-  const dx = e.touches[0].clientX - lastX; lastX = e.touches[0].clientX;
-  const r = activeRing.getAttribute("rotation");
-  activeRing.setAttribute("rotation", {x:r.x, y:r.y+dx*0.5, z:r.z});
-}, {passive:false});
-document.addEventListener("touchend", () => dragging=false);
-
-/* ===== CLOSE ===== */
+/* ===== CLOSE BUTTON ===== */
 closeBtn.addEventListener("click", () => {
-  // Fade out text + hide button
+  const state = window.appState;
+  if (!state || state.isBusy) return;
+  state.isBusy = true;
+
   diamondContent.classList.remove('show');
   closeBtn.style.display = "none";
 
-  // Animate each ring back to its slot
+  const rings = document.querySelectorAll(".ring");
+
   rings.forEach((r, i) => {
     r.setAttribute('visible', true);
 
-    // fixed positions: [-2.2, 0, 2.2]
     const x = (i - 1) * 2.2;
 
-    // Position reset
     r.setAttribute(
       "animation__resetPos",
       `property: position; to: ${x} 0 0; dur: 1200; easing: easeInOutQuad`
     );
-
-    // Scale reset
     r.setAttribute(
       "animation__resetScale",
       "property: scale; to: 1 1 1; dur: 1200; easing: easeInOutQuad"
     );
-
-    // Rotation reset (facing forward)
     r.setAttribute(
       "animation__resetRot",
       "property: rotation; to: 0 -90 0; dur: 800; easing: easeInOutQuad"
     );
 
-    // Clean up focus animations
     r.removeAttribute("animation__focus");
     r.removeAttribute("animation__size");
   });
 
-  // Clear active state
-  activeRing = null;
+  state.activeRing = null;
 
-  // Reset backgrounds + outro text
   document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
   document.getElementById('bg-neutral').classList.add('active');
-  setTimeout(() => outroText.classList.add('show'), 1200);
+  setTimeout(() => {
+    outroText.classList.add('show');
+    state.isBusy = false;
+  }, 1200);
 });
-
-
-
-
 </script>
 
 </body>
