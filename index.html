@@ -19,55 +19,8 @@ html, body {
     radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
     radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
     radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Lato', sans-serif;
 }
-/* Scene 1: Intro Animation */
-    #intro {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      /* Match body gradient */
-      background-color: #070f2b;
-     background-image:
-    radial-gradient(at 75% 48%, #003c43 0%, transparent 70%),
-    radial-gradient(at 92% 5%, #135d66 0%, transparent 60%),
-    radial-gradient(at 2% 86%, #77b0aa 0%, transparent 50%),
-    radial-gradient(at 96% 32%, #e3fef7 0%, transparent 40%);
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      animation: fadeOut 1.5s ease-in-out 3.5s forwards;
-      pointer-events: none;
-    }
-    
-    #intro h1 {
-      font-size: 3rem;
-      letter-spacing: 0.2em;
-      margin: 0;
-      opacity: 0;
-      animation: fadeIn 1s ease-out 0.5s forwards;
-    }
-
-    .line {
-      width: 0;
-      height: 1px;
-      background: white;
-      margin: 20px 0;
-      animation: expandLine 1s ease-out 1.5s forwards;
-    }
-
-    #intro p {
-      font-size: 1.2rem;
-      letter-spacing: 0.1em;
-      opacity: 0;
-      animation: fadeIn 1s ease-out 2.5s forwards;
-    }
-
-    @keyframes fadeIn { to { opacity: 1; } }
-    @keyframes expandLine { to { width: 200px; } }
-    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
 /* UI ELEMENTS */
 #closeBtn {
@@ -234,7 +187,6 @@ html, body {
       scale="0 0 0">
       <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
     </a-entity>
-    
 
     <!-- RING 2 (GREEN) -->
     <a-entity class="ring" data-type="green"
@@ -262,6 +214,20 @@ html, body {
 const rings = document.querySelectorAll(".ring");
 const group = document.getElementById("ringGroup");
 const closeBtn = document.getElementById("closeBtn");
+
+// Store original transforms for each ring
+const originalTransforms = [];
+rings.forEach(r => {
+  const pos = r.getAttribute("position");
+  const rot = r.getAttribute("rotation");
+  const scale = r.getAttribute("scale");
+  originalTransforms.push({
+    el: r,
+    position: { x: pos.x, y: pos.y, z: pos.z },
+    rotation: { x: rot.x, y: rot.y, z: rot.z },
+    scale: { x: scale.x, y: scale.y, z: scale.z }
+  });
+});
 
 const introText = document.getElementById("introText");
 const headerMsg = document.getElementById("headerMsg");
@@ -332,43 +298,47 @@ rings.forEach(ring => {
   });
 });
 
-/* ===== CLICK ===== */
+/* ===== CLICK (FOCUS RING) ===== */
 rings.forEach(ring => {
   ring.addEventListener("click", () => {
+    // if a ring is already focused, ignore
     if (activeRing) return;
+
+    // ignore clicks on hidden rings
+    if (ring.getAttribute("visible") === false) return;
 
     const type = ring.getAttribute("data-type");
     const data = content[type];
 
-    // Update Background
+    // background
     document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
     document.getElementById(`bg-${type}`).classList.add('active');
 
-    // Hide other rings
+    // hide other rings
     rings.forEach(r => {
-      if (r !== ring) {
-        r.setAttribute('visible', false);
-      }
+      if (r !== ring) r.setAttribute('visible', false);
     });
 
     activeRing = ring;
     closeBtn.style.display = "block";
     outroText.classList.remove('show');
 
-    // Remove reset animations to prevent conflicts
+    // clear previous reset animations on this ring
     ring.removeAttribute("animation__resetPos");
     ring.removeAttribute("animation__resetScale");
+    ring.removeAttribute("animation__resetRot");
 
-    // Move slightly right (0.6) to avoid text overlap
-    ring.setAttribute("animation__focus", "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
-    ring.setAttribute("animation__size", "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
+    // move + scale to focus
+    ring.setAttribute("animation__focus",
+      "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
+    ring.setAttribute("animation__size",
+      "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
 
-    // Show Content
+    // update text
     dTitle.innerHTML = data.title;
     dSub.innerHTML = data.sub;
     dFoot.innerHTML = data.foot;
     diamondContent.classList.add('show');
-
   });
 });
 
@@ -395,7 +365,7 @@ document.addEventListener("mousemove", e => {
 
 document.addEventListener("mouseup", () => dragging = false);
 
-// Mobile touch  mouse events
+// ADD BELOW your existing mouse events
 document.addEventListener("touchstart", e => {
   if(!activeRing) return; dragging=true; lastX = e.touches[0].clientX;
 }, {passive:false});
@@ -406,37 +376,54 @@ document.addEventListener("touchmove", e => {
   activeRing.setAttribute("rotation", {x:r.x, y:r.y+dx*0.5, z:r.z});
 }, {passive:false});
 document.addEventListener("touchend", () => dragging=false);
+
 /* ===== CLOSE ===== */
 closeBtn.addEventListener("click", () => {
-  // 1. Fade out text
+  // Fade out text + hide button
   diamondContent.classList.remove('show');
   closeBtn.style.display = "none";
 
-  // 2. Animate rings back
+  // Animate each ring back to its slot
   rings.forEach((r, i) => {
     r.setAttribute('visible', true);
-    
-    // Calculate original position (New spacing 2.2)
+
+    // fixed positions: [-2.2, 0, 2.2]
     const x = (i - 1) * 2.2;
 
-    // Animate Position Back
-    r.setAttribute("animation__resetPos", `property: position; to: ${x} 0 0; dur: 1200; easing: easeInOutQuad`);
-    r.setAttribute("animation__resetScale", "property: scale; to: 1 1 1; dur: 1200; easing: easeInOutQuad");
+    // Position reset
+    r.setAttribute(
+      "animation__resetPos",
+      `property: position; to: ${x} 0 0; dur: 1200; easing: easeInOutQuad`
+    );
+
+    // Scale reset
+    r.setAttribute(
+      "animation__resetScale",
+      "property: scale; to: 1 1 1; dur: 1200; easing: easeInOutQuad"
+    );
+
+    // Rotation reset (facing forward)
+    r.setAttribute(
+      "animation__resetRot",
+      "property: rotation; to: 0 -90 0; dur: 800; easing: easeInOutQuad"
+    );
 
     // Clean up focus animations
     r.removeAttribute("animation__focus");
     r.removeAttribute("animation__size");
   });
 
+  // Clear active state
   activeRing = null;
-  
-  // Reset Background
+
+  // Reset backgrounds + outro text
   document.querySelectorAll('.bg-layer').forEach(bg => bg.classList.remove('active'));
   document.getElementById('bg-neutral').classList.add('active');
-
-  // Show Outro
   setTimeout(() => outroText.classList.add('show'), 1200);
 });
+
+
+
 
 </script>
 
