@@ -175,33 +175,34 @@ html, body {
   <a-light type="ambient" intensity="0.8"></a-light>
   <a-light type="directional" position="2 4 3" intensity="0.6"></a-light>
 
+  <!-- RING GROUP -->
   <a-entity id="ringGroup" position="0 0.85 -1.6">
 
-  <a-entity class="ring" data-type="red" ring-focus drag-rotate-y
-    gltf-model="resources/models/ring1.glb"
-    position="-2.2 0 0"
-    rotation="0 -90 0"
-    scale="0 0 0">
-    <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
-  </a-entity>
+    <a-entity class="ring" data-type="red" ring-focus drag-rotate-y
+      gltf-model="resources/models/ring1.glb"
+      position="-2.2 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#ff0000" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
 
-  <a-entity class="ring" data-type="green" ring-focus drag-rotate-y
-    gltf-model="resources/models/ring2.glb"
-    position="0 0 0"
-    rotation="0 -90 0"
-    scale="0 0 0">
-    <a-light type="point" color="#00ff00" intensity="0" distance="1" position="0 0.5 0"></a-light>
-  </a-entity>
+    <a-entity class="ring" data-type="green" ring-focus drag-rotate-y
+      gltf-model="resources/models/ring2.glb"
+      position="0 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#00ff00" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
 
-  <a-entity class="ring" data-type="blue" ring-focus drag-rotate-y
-    gltf-model="resources/models/ring3.glb"
-    position="2.2 0 0"
-    rotation="0 -90 0"
-    scale="0 0 0">
-    <a-light type="point" color="#0000ff" intensity="0" distance="1" position="0 0.5 0"></a-light>
-  </a-entity>
+    <a-entity class="ring" data-type="blue" ring-focus drag-rotate-y
+      gltf-model="resources/models/ring3.glb"
+      position="2.2 0 0"
+      rotation="0 -90 0"
+      scale="0 0 0">
+      <a-light type="point" color="#0000ff" intensity="0" distance="1" position="0 0.5 0"></a-light>
+    </a-entity>
 
-</a-entity>
+  </a-entity>
 
 </a-scene>
 
@@ -289,11 +290,11 @@ AFRAME.registerComponent('ring-focus', {
       el.removeAttribute("animation__resetScale");
       el.removeAttribute("animation__resetRot");
 
-      // focus animations
+      // focus animations (bigger)
       el.setAttribute("animation__focus",
         "property: position; to: 0.6 0.25 0.5; dur: 700; easing: easeOutCubic");
       el.setAttribute("animation__size",
-        "property: scale; to: 2.5 2.5 2.5; dur: 700; easing: easeOutCubic");
+        "property: scale; to: 3 3 3; dur: 700; easing: easeOutCubic");
 
       dTitle.innerHTML = data.title;
       dSub.innerHTML   = data.sub;
@@ -387,11 +388,11 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     headerMsg.classList.add('show');
 
-    // rings appear sequentially
+    // rings appear sequentially, to larger idle scale
     rings.forEach((ring, i) => {
       setTimeout(() => {
         ring.setAttribute('animation__appear',
-          'property: scale; to: 1 1 1; dur: 1000; easing: easeOutBack');
+          'property: scale; to: 1.4 1.4 1.4; dur: 1000; easing: easeOutBack');
         const light = ring.querySelector('a-light');
         light.setAttribute('animation__glow',
           'property: intensity; to: 0.5; dur: 800');
@@ -422,7 +423,7 @@ closeBtn.addEventListener("click", () => {
     );
     r.setAttribute(
       "animation__resetScale",
-      "property: scale; to: 1 1 1; dur: 1200; easing: easeInOutQuad"
+      "property: scale; to: 1.4 1.4 1.4; dur: 1200; easing: easeInOutQuad"
     );
     r.setAttribute(
       "animation__resetRot",
