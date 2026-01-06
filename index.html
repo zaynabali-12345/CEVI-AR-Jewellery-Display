@@ -395,6 +395,17 @@ document.addEventListener("mousemove", e => {
 
 document.addEventListener("mouseup", () => dragging = false);
 
+// Mobile touch  mouse events
+document.addEventListener("touchstart", e => {
+  if(!activeRing) return; dragging=true; lastX = e.touches[0].clientX;
+}, {passive:false});
+document.addEventListener("touchmove", e => {
+  if(!dragging||!activeRing) return; e.preventDefault();
+  const dx = e.touches[0].clientX - lastX; lastX = e.touches[0].clientX;
+  const r = activeRing.getAttribute("rotation");
+  activeRing.setAttribute("rotation", {x:r.x, y:r.y+dx*0.5, z:r.z});
+}, {passive:false});
+document.addEventListener("touchend", () => dragging=false);
 /* ===== CLOSE ===== */
 closeBtn.addEventListener("click", () => {
   // 1. Fade out text
